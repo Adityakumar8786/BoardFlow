@@ -1,0 +1,41 @@
+/* theme.css — Purpose: CSS custom properties for light/dark mode.
+   Every color in the app references one of these variables so toggling
+   the body class instantly re-themes the whole UI with no JS re-render needed. */
+
+.theme-light {
+  --bg-primary: #F8F9FB;
+  --bg-secondary: #FFFFFF;
+  --bg-tertiary: #F1F3F5;
+  --text-primary: #1A1B1E;
+  --text-secondary: #6B7280;
+  --border-color: #E5E7EB;
+  --accent: #6C5CE7;
+  --accent-hover: #5A4BD4;
+  --accent-soft: #EEEBFF;
+  --danger: #E03131;
+  --danger-soft: #FFF0F0;
+  --success: #12B886;
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
+  --shadow-lg: 0 12px 32px rgba(16, 24, 40, 0.14);
+  --canvas-bg: #FFFFFF;
+}
+
+.theme-dark {
+  --bg-primary: #16171B;
+  --bg-secondary: #1E2025;
+  --bg-tertiary: #26282E;
+  --text-primary: #F1F2F4;
+  --text-secondary: #9CA0A8;
+  --border-color: #33353C;
+  --accent: #8B7CF6;
+  --accent-hover: #9D90F8;
+  --accent-soft: #2A2540;
+  --danger: #FF6B6B;
+  --danger-soft: #3A2323;
+  --success: #2FE0A8;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5);
+  --canvas-bg: #FFFFFF;
+}

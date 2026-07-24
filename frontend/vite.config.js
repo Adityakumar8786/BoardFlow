@@ -1,6 +1,3 @@
-// vite.config.js
-// Purpose: Vite build configuration. Proxies /api and /socket.io calls to the backend
-// during development so the frontend can use relative URLs (no hardcoded localhost:5000).
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 

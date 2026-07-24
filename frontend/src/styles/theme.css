@@ -1,7 +1,3 @@
-/* theme.css — Purpose: CSS custom properties for light/dark mode.
-   Every color in the app references one of these variables so toggling
-   the body class instantly re-themes the whole UI with no JS re-render needed. */
-
 .theme-light {
   --bg-primary: #F8F9FB;
   --bg-secondary: #FFFFFF;

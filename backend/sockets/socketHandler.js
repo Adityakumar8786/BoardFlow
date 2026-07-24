@@ -1,9 +1,6 @@
 const Room = require("../models/Room");
 
-
 const presenceByRoom = {};
-
-
 
 const getPresenceList = (roomCode) => {
   const room = presenceByRoom[roomCode] || {};
@@ -15,7 +12,6 @@ const initSocket = (io) => {
     let currentRoom = null;
     let currentUser = null;
 
-    // ---------- JOIN ROOM ----------
     socket.on("join-room", async ({ roomCode, user }) => {
       try {
         const room = await Room.findOne({ code: roomCode });
@@ -36,10 +32,8 @@ const initSocket = (io) => {
           joinedAt: new Date().toISOString(),
         };
 
-        // Send full drawing history to just this socket so their canvas replays existing strokes.
         socket.emit("room-history", room.strokes);
 
-        // Tell everyone in the room (including the new user) who's online now.
         io.to(roomCode).emit("presence-update", getPresenceList(roomCode));
         socket.to(roomCode).emit("user-joined", { username: user.username });
       } catch (err) {
@@ -47,14 +41,12 @@ const initSocket = (io) => {
       }
     });
 
-    // ---------- LEAVE ROOM ----------
     socket.on("leave-room", () => {
       handleLeave(socket, io, currentRoom, currentUser);
       currentRoom = null;
       currentUser = null;
     });
 
-    // ---------- DRAW STROKE ----------
     socket.on("draw-stroke", async ({ roomCode, stroke }) => {
       try {
         await Room.updateOne({ code: roomCode }, { $push: { strokes: stroke } });
@@ -64,9 +56,25 @@ const initSocket = (io) => {
       }
     });
 
-    // ---------- UNDO ----------
-    // Removes the most recent stroke belonging to THIS user in this room (by strokeId sent
-    // from the client, which maintains its own per-user undo stack — see WhiteboardRoom.jsx).
+    socket.on("update-stroke", async ({ roomCode, stroke }) => {
+      try {
+        await Room.updateOne(
+          { code: roomCode, "strokes.strokeId": stroke.strokeId },
+          {
+            $set: {
+              "strokes.$.content": stroke.content,
+              "strokes.$.points": stroke.points,
+              "strokes.$.color": stroke.color,
+              "strokes.$.size": stroke.size,
+            },
+          }
+        );
+        socket.to(roomCode).emit("stroke-updated", stroke);
+      } catch (err) {
+        socket.emit("error-message", "Failed to update stroke");
+      }
+    });
+
     socket.on("undo-stroke", async ({ roomCode, strokeId }) => {
       try {
         await Room.updateOne({ code: roomCode }, { $pull: { strokes: { strokeId } } });
@@ -76,7 +84,6 @@ const initSocket = (io) => {
       }
     });
 
-    
     socket.on("redo-stroke", async ({ roomCode, stroke }) => {
       try {
         await Room.updateOne({ code: roomCode }, { $push: { strokes: stroke } });
@@ -86,7 +93,6 @@ const initSocket = (io) => {
       }
     });
 
-    
     socket.on("clear-canvas", async ({ roomCode }) => {
       try {
         await Room.updateOne({ code: roomCode }, { $set: { strokes: [] } });
@@ -96,7 +102,6 @@ const initSocket = (io) => {
       }
     });
 
-    
     socket.on("cursor-move", ({ roomCode, x, y }) => {
       if (!currentUser) return;
       socket.to(roomCode).emit("cursor-update", {
@@ -108,7 +113,6 @@ const initSocket = (io) => {
       });
     });
 
-    // ---------- DISCONNECT ----------
     socket.on("disconnect", () => {
       handleLeave(socket, io, currentRoom, currentUser);
     });

@@ -1,7 +1,3 @@
-// src/App.jsx
-// Purpose: Top-level router. Wraps everything in Auth/Theme/Toast providers so
-// any nested page/component can access global state via hooks.
-
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";

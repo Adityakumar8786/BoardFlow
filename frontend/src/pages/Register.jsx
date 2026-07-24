@@ -1,6 +1,3 @@
-// src/pages/Register.jsx
-// Purpose: Registration form. Backend hashes the password and auto-logs in the new user.
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";

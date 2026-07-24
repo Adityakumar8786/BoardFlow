@@ -1,7 +1,3 @@
-// src/pages/Dashboard.jsx
-// Purpose: Lists rooms owned by the user, lets them create a new room, or join an
-// existing one by code. This is the landing page after login.
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
@@ -33,7 +29,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadRooms();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, []);
 
   const handleCreate = async (e) => {

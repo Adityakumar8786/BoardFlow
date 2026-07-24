@@ -1,6 +1,3 @@
-// src/components/ConfirmDialog.jsx
-// Purpose: Reusable confirmation modal (used for "Clear Canvas", "Leave Room", "Delete Room").
-
 export default function ConfirmDialog({ open, title, message, onConfirm, onCancel }) {
   if (!open) return null;
   return (

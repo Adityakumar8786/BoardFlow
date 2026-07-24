@@ -1,6 +1,3 @@
-// backend/middleware/authMiddleware.js
-// Purpose: Protects routes that require an authenticated user (and optionally a specific role).
-
 const ensureAuthenticated = (req, res, next) => {
   if (req.isAuthenticated && req.isAuthenticated()) {
     return next();

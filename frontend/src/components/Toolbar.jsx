@@ -1,12 +1,10 @@
-// src/components/Toolbar.jsx
-// Purpose: Tool selection, color, brush size, undo/redo, clear, and export controls.
-
 const TOOLS = [
   { id: "pencil", label: "Pencil", icon: "✏️" },
   { id: "eraser", label: "Eraser", icon: "🧹" },
   { id: "line", label: "Line", icon: "／" },
   { id: "rectangle", label: "Rectangle", icon: "▭" },
   { id: "circle", label: "Circle", icon: "◯" },
+  { id: "text", label: "Text", icon: "𝐓" },
 ];
 
 const COLORS = ["#1E1E1E", "#E03131", "#2F9E44", "#1971C2", "#F08C00", "#9C36B5", "#0CA678", "#FFFFFF"];
@@ -32,6 +30,9 @@ export default function Toolbar({
             </button>
           ))}
         </div>
+        {tool === "text" && (
+          <p className="toolbar-hint">Click the canvas to type. Double-click any text to edit it.</p>
+        )}
       </div>
 
       <div className="toolbar-section">

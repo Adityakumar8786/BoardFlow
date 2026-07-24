@@ -1,7 +1,3 @@
-// backend/routes/authRoutes.js
-// Purpose: Defines URL paths for authentication and wires them to controller functions
-// with express-validator rules for input validation.
-
 const express = require("express");
 const { body } = require("express-validator");
 const { register, login, logout, getCurrentUser } = require("../controllers/authController");

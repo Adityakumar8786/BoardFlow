@@ -1,6 +1,3 @@
-// backend/routes/roomRoutes.js
-// Purpose: Defines REST endpoints for room management. All routes require authentication.
-
 const express = require("express");
 const { body } = require("express-validator");
 const { createRoom, getMyRooms, getRoomByCode, deleteRoom } = require("../controllers/roomController");
@@ -8,7 +5,7 @@ const { ensureAuthenticated } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.use(ensureAuthenticated); // every route below requires a logged-in user
+router.use(ensureAuthenticated);
 
 router.post(
   "/",

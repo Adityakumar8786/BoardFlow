@@ -1,27 +1,3 @@
-// src/pages/WhiteboardRoom.jsx
-// Purpose: The main whiteboard screen. Owns the Socket.IO connection for this room,
-// wires Canvas events to the server, tracks presence + remote cursors, and implements
-// the undo/redo stacks.
-//
-// UNDO/REDO DATA STRUCTURE — WHY A STACK:
-// Each user keeps two LOCAL stacks: `undoStack` (their own completed strokes, most-recent
-// on top) and `redoStack` (strokes they just undid). A stack is the natural fit because
-// undo/redo is strictly last-in-first-out: you always undo the most recent action first,
-// and redo always restores the most recently undone one. Using an array with push/pop
-// gives O(1) operations.
-//   - Undo: pop from undoStack -> tell server to remove that stroke -> push it onto redoStack
-//   - Redo: pop from redoStack -> tell server to re-add that stroke -> push it onto undoStack
-// MEMORY IMPLICATIONS: stacks are kept in React state, capped implicitly by session length.
-// For a very long-running session this could grow unbounded; a production hardening step
-// would cap stack size (e.g. last 100 actions) and drop the oldest silently.
-// EDGE CASES:
-//   - Drawing a NEW stroke after undoing clears the redoStack (standard editor behavior —
-//     otherwise "redo" could reattach a stroke whose canvas state no longer makes sense).
-//   - Undo/redo only affects strokes made by the CURRENT user, not collaborators' strokes —
-//     this avoids the confusing UX of one person's undo erasing someone else's work.
-//   - If the socket disconnects mid-stack, stacks reset on reconnect (history re-syncs from
-//     the server via 'room-history', which is always the source of truth).
-
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { io } from "socket.io-client";
@@ -34,6 +10,7 @@ import Toolbar from "../components/Toolbar";
 import OnlineUsers from "../components/OnlineUsers";
 import RemoteCursors from "../components/RemoteCursors";
 import ConfirmDialog from "../components/ConfirmDialog";
+import AiSummaryModal from "../components/AiSummaryModal";
 
 export default function WhiteboardRoom() {
   const { code } = useParams();
@@ -49,6 +26,11 @@ export default function WhiteboardRoom() {
   const [cursors, setCursors] = useState({});
   const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
   const [connected, setConnected] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState("");
+  const [aiSummary, setAiSummary] = useState("");
+  const [aiHasContent, setAiHasContent] = useState(true);
 
   const canvasRef = useRef(null);
   const socketRef = useRef(null);
@@ -57,7 +39,6 @@ export default function WhiteboardRoom() {
   const [, forceRerender] = useState(0);
   const bump = () => forceRerender((n) => n + 1);
 
-  // ---------- Load room metadata + connect socket ----------
   useEffect(() => {
     let isMounted = true;
 
@@ -97,6 +78,10 @@ export default function WhiteboardRoom() {
         canvasRef.current?.removeStroke(strokeId);
       });
 
+      socket.on("stroke-updated", (stroke) => {
+        canvasRef.current?.updateStroke(stroke);
+      });
+
       socket.on("canvas-cleared", () => {
         canvasRef.current?.clear();
       });
@@ -130,16 +115,15 @@ export default function WhiteboardRoom() {
         socketRef.current.disconnect();
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [code]);
 
-  // ---------- Stroke completed locally ----------
   const handleStrokeComplete = useCallback((stroke) => {
     stroke.userId = user.id;
     stroke.username = user.username;
     socketRef.current?.emit("draw-stroke", { roomCode: code, stroke });
     undoStack.current.push(stroke);
-    redoStack.current = []; // new action invalidates the redo history (standard editor behavior)
+    redoStack.current = [];
     bump();
   }, [code, user]);
 
@@ -147,7 +131,10 @@ export default function WhiteboardRoom() {
     socketRef.current?.emit("cursor-move", { roomCode: code, x, y });
   }, [code]);
 
-  // ---------- Undo / Redo ----------
+  const handleStrokeUpdate = useCallback((stroke) => {
+    socketRef.current?.emit("update-stroke", { roomCode: code, stroke });
+  }, [code]);
+
   const handleUndo = () => {
     const stroke = undoStack.current.pop();
     if (!stroke) return;
@@ -166,7 +153,6 @@ export default function WhiteboardRoom() {
     bump();
   };
 
-  // ---------- Clear ----------
   const handleClear = () => {
     canvasRef.current?.clear();
     socketRef.current?.emit("clear-canvas", { roomCode: code });
@@ -178,6 +164,21 @@ export default function WhiteboardRoom() {
 
   const handleLeave = () => navigate("/dashboard");
 
+  const handleGenerateSummary = async () => {
+    setAiOpen(true);
+    setAiLoading(true);
+    setAiError("");
+    try {
+      const { data } = await api.post("/ai/summarize", { roomCode: code });
+      setAiSummary(data.summary);
+      setAiHasContent(data.hasContent);
+    } catch (err) {
+      setAiError(err.response?.data?.message || "Failed to generate summary");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   if (!room) return null;
 
   return (
@@ -185,9 +186,12 @@ export default function WhiteboardRoom() {
       <Navbar />
       <div className="whiteboard-toprow">
         <button className="btn btn-ghost" onClick={handleLeave}>← Leave Room</button>
-        <span className={`connection-badge ${connected ? "online" : "offline"}`}>
-          {connected ? "● Live" : "○ Reconnecting..."}
-        </span>
+        <div className="whiteboard-toprow-right">
+          <button className="btn btn-primary" onClick={handleGenerateSummary}>✨ Generate AI Summary</button>
+          <span className={`connection-badge ${connected ? "online" : "offline"}`}>
+            {connected ? "● Live" : "○ Reconnecting..."}
+          </span>
+        </div>
       </div>
       <div className="whiteboard-layout">
         <Toolbar
@@ -207,6 +211,7 @@ export default function WhiteboardRoom() {
             ref={canvasRef}
             tool={tool} color={color} size={size}
             onStrokeComplete={handleStrokeComplete}
+            onStrokeUpdate={handleStrokeUpdate}
             onCursorMove={handleCursorMove}
           />
           <RemoteCursors cursors={cursors} />
@@ -221,6 +226,16 @@ export default function WhiteboardRoom() {
         message="This will erase the whiteboard for everyone in this room. Continue?"
         onConfirm={handleClear}
         onCancel={() => setClearConfirmOpen(false)}
+      />
+
+      <AiSummaryModal
+        open={aiOpen}
+        loading={aiLoading}
+        error={aiError}
+        summary={aiSummary}
+        hasContent={aiHasContent}
+        onRegenerate={handleGenerateSummary}
+        onClose={() => setAiOpen(false)}
       />
     </div>
   );

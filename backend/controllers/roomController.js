@@ -1,14 +1,8 @@
-// backend/controllers/roomController.js
-// Purpose: REST endpoints for creating, listing, joining (by code), and deleting rooms.
-// Real-time drawing itself happens over Socket.IO (see sockets/socketHandler.js) —
-// this controller only manages room *metadata* and persisted stroke history.
-
 const { validationResult } = require("express-validator");
 const Room = require("../models/Room");
 
-// Generates a random, readable 6-character room code (e.g. "A3F9K2").
 const generateRoomCode = () => {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // excludes ambiguous chars like O/0, I/1
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let code = "";
   for (let i = 0; i < 6; i++) {
     code += chars[Math.floor(Math.random() * chars.length)];
@@ -54,9 +48,6 @@ const getMyRooms = async (req, res, next) => {
   }
 };
 
-// @route  GET /api/rooms/:code
-// Used when a user joins by code — returns room info + full stroke history
-// so the client can render existing drawings before subscribing to live updates.
 const getRoomByCode = async (req, res, next) => {
   try {
     const room = await Room.findOne({ code: req.params.code.toUpperCase() });
@@ -69,8 +60,6 @@ const getRoomByCode = async (req, res, next) => {
   }
 };
 
-// @route  DELETE /api/rooms/:code
-// Only the room owner or an admin may delete a room.
 const deleteRoom = async (req, res, next) => {
   try {
     const room = await Room.findOne({ code: req.params.code.toUpperCase() });

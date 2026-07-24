@@ -1,7 +1,3 @@
-// src/components/OnlineUsers.jsx
-// Purpose: Sidebar panel listing everyone currently connected to this room,
-// with join time and a colored dot matching their live cursor color.
-
 export default function OnlineUsers({ users, roomName, roomCode }) {
   const formatTime = (iso) => new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 

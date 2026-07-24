@@ -1,6 +1,3 @@
-// src/context/ToastContext.jsx
-// Purpose: Lightweight toast notification system available anywhere via useToast().
-
 import { createContext, useCallback, useContext, useState } from "react";
 
 const ToastContext = createContext(null);

@@ -1,14 +1,8 @@
-// backend/controllers/authController.js
-// Purpose: Handles registration, login, logout, and "who am I" checks.
-// This is the Controller layer in MVC — it talks to the Model (User) and returns
-// clean JSON responses; it never contains raw DB queries beyond what's needed here.
-
 const bcrypt = require("bcryptjs");
 const passport = require("passport");
 const { validationResult } = require("express-validator");
 const User = require("../models/User");
 
-// @route  POST /api/auth/register
 const register = async (req, res, next) => {
   try {
     const errors = validationResult(req);
@@ -23,8 +17,6 @@ const register = async (req, res, next) => {
       return res.status(409).json({ success: false, message: "Username or email already in use" });
     }
 
-    // Hash the password with a salt round of 12 — a strong, industry-standard balance
-    // between security and login speed.
     const hashedPassword = await bcrypt.hash(password, 12);
 
     const user = await User.create({
@@ -33,7 +25,6 @@ const register = async (req, res, next) => {
       password: hashedPassword,
     });
 
-    // Automatically log the user in after registration by establishing a session.
     req.login(user, (err) => {
       if (err) return next(err);
       return res.status(201).json({
@@ -46,7 +37,6 @@ const register = async (req, res, next) => {
   }
 };
 
-// @route  POST /api/auth/login
 const login = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -62,11 +52,10 @@ const login = (req, res, next) => {
     req.login(user, (loginErr) => {
       if (loginErr) return next(loginErr);
 
-      // "Remember Me" — extend session cookie lifetime if requested.
       if (req.body.rememberMe) {
-        req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
+        req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000;
       } else {
-        req.session.cookie.maxAge = 24 * 60 * 60 * 1000; // 1 day
+        req.session.cookie.maxAge = 24 * 60 * 60 * 1000;
       }
 
       return res.status(200).json({
@@ -77,7 +66,6 @@ const login = (req, res, next) => {
   })(req, res, next);
 };
 
-// @route  POST /api/auth/logout
 const logout = (req, res, next) => {
   req.logout((err) => {
     if (err) return next(err);
@@ -89,7 +77,6 @@ const logout = (req, res, next) => {
   });
 };
 
-// @route  GET /api/auth/me
 const getCurrentUser = (req, res) => {
   if (req.isAuthenticated && req.isAuthenticated()) {
     const { _id, username, email, role, cursorColor } = req.user;

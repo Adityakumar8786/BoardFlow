@@ -1,8 +1,3 @@
-// src/context/AuthContext.jsx
-// Purpose: Global auth state. Wraps the app so any component can read the current user
-// or trigger login/logout without prop-drilling. On mount, checks /api/auth/me to see
-// if a valid session cookie already exists (keeps the user logged in across refreshes).
-
 import { createContext, useContext, useEffect, useState } from "react";
 import api from "../api/axios";
 

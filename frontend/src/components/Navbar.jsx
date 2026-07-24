@@ -1,6 +1,3 @@
-// src/components/Navbar.jsx
-// Purpose: Top navigation bar with branding, theme toggle, and profile dropdown.
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";

@@ -1,6 +1,3 @@
-// src/pages/Login.jsx
-// Purpose: Login form. On success, AuthContext stores the user and we redirect to /dashboard.
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";

@@ -1,25 +1,23 @@
-// backend/models/Room.js
-// Purpose: Defines a Room — an isolated whiteboard space.
-// The `strokes` array IS the drawing history: when a new user joins,
-// the server sends this array so their canvas replays exactly what exists.
-
 const mongoose = require("mongoose");
 
 const strokeSchema = new mongoose.Schema(
   {
-    strokeId: { type: String, required: true }, // client-generated unique id (uuid)
+    strokeId: { type: String, required: true },
     tool: {
       type: String,
-      enum: ["pencil", "eraser", "rectangle", "circle", "line"],
+      enum: ["pencil", "eraser", "rectangle", "circle", "line", "text"],
       required: true,
     },
     color: { type: String, required: true },
+
     size: { type: Number, required: true, min: 1, max: 50 },
     points: {
-      // For pencil/eraser: array of {x,y}. For shapes: [start, end] is enough.
+
       type: [{ x: Number, y: Number }],
       required: true,
     },
+
+    content: { type: String, maxlength: 500 },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     username: { type: String },
   },
@@ -37,7 +35,7 @@ const roomSchema = new mongoose.Schema(
     code: {
       type: String,
       required: true,
-      unique: true, // used to join a room, must be unique
+      unique: true,
       uppercase: true,
       trim: true,
       minlength: 6,
@@ -56,7 +54,6 @@ const roomSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Index on `code` for fast room lookups on join (unique: true already creates one).
-roomSchema.index({ owner: 1 }); // fast lookup of "my rooms"
+roomSchema.index({ owner: 1 });
 
 module.exports = mongoose.model("Room", roomSchema);

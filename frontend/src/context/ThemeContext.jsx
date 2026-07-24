@@ -1,7 +1,3 @@
-// src/context/ThemeContext.jsx
-// Purpose: Simple light/dark mode toggle, applied by adding a class to <body>.
-// CSS variables in theme.css read that class to swap the entire color palette.
-
 import { createContext, useContext, useEffect, useState } from "react";
 
 const ThemeContext = createContext(null);

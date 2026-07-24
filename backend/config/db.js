@@ -1,7 +1,3 @@
-// backend/config/db.js
-// Purpose: Establishes and exports a single MongoDB connection using Mongoose.
-// Why a separate file: keeps connection logic isolated from server.js (separation of concerns).
-
 const mongoose = require("mongoose");
 
 const connectDB = async () => {

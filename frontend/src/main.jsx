@@ -1,6 +1,3 @@
-// src/main.jsx
-// Purpose: React entry point — mounts <App /> into #root and imports global styles.
-
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
